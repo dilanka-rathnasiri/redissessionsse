@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sse-deployment
+  labels:
+    app: sse
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sse
+  template:
+    metadata:
+      labels:
+        app: sse
+    spec:
+      containers:
+        - name: sse
+          image: 127.0.0.1:5000/sse:latest
+          ports:
+            - containerPort: 7000
+          env:
+            - name: REDIS_HOST
+              value: redis-service
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sse-service
+spec:
+  selector:
+    app: sse
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 7000
